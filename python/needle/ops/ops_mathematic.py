@@ -250,6 +250,7 @@ class Summation(TensorOp):
         # print(f"axes: {self.axes}")
         new_shape = node.inputs[0].shape
         axes = self.axes if self.axes is not None else tuple(range(len(new_shape)))
+        axes = tuple(len(new_shape) + ax if ax < 0 else ax for ax in axes)
         tmp_shape = tuple(1 if i in axes else v for i, v in enumerate(new_shape))
         # print(f"tmp_shape: {tmp_shape}")
         tmp_grad = reshape(out_grad, tmp_shape)

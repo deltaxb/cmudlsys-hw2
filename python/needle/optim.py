@@ -25,7 +25,12 @@ class SGD(Optimizer):
 
     def step(self):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        for theta in self.params:
+            if theta not in self.u:
+                self.u[theta] = ndl.init.zeros(*theta.shape, device=theta.device, dtype=theta.dtype)
+            grad = theta.grad.data + self.weight_decay * theta.data
+            self.u[theta].data = self.momentum * self.u[theta].data + (1 - self.momentum) * grad.data
+            theta.data -=  self.lr * self.u[theta].data
         ### END YOUR SOLUTION
 
     def clip_grad_norm(self, max_norm=0.25):
@@ -61,5 +66,16 @@ class Adam(Optimizer):
 
     def step(self):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        self.t += 1
+        for theta in self.params:
+            if theta not in self.m:
+                self.m[theta] = ndl.init.zeros(*theta.shape, device=theta.device, dtype=theta.dtype)
+            if theta not in self.v:
+                self.v[theta] = ndl.init.zeros(*theta.shape, device=theta.device, dtype=theta.dtype)
+            grad = theta.grad.data + self.weight_decay * theta.data
+            self.m[theta].data = self.beta1 * self.m[theta].data + (1.0 - self.beta1) * grad.data
+            self.v[theta].data = self.beta2 * self.v[theta].data + (1.0 - self.beta2) * (grad.data ** 2)
+            mm = self.m[theta].data / (1.0 - self.beta1 ** self.t)
+            vv = self.v[theta].data / (1.0 - self.beta2 ** self.t)
+            theta.data -= self.lr * mm.data / (vv.data ** 0.5 + self.eps)
         ### END YOUR SOLUTION

@@ -17,8 +17,14 @@ class LogSoftmax(TensorOp):
 
     def gradient(self, out_grad: Tensor, node: Tensor):
         ### BEGIN YOUR SOLUTION
-        Z = node.inputs[0]
-        return out_grad - out_grad * exp(logsoftmax(Z))
+        num_c = node.inputs[0].shape[-1]
+        Z = exp(logsoftmax(node.inputs[0]))
+        def turn(a:Tensor, num_c):
+            nshape = a.shape + (1,)
+            ncshape = a.shape + (num_c,)
+            return a.reshape(nshape).broadcast_to(ncshape)
+        A = out_grad.sum(axes=(-1,))
+        return out_grad - Z * turn(A, num_c)
         ### END YOUR SOLUTION
 
 

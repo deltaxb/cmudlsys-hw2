@@ -12,7 +12,6 @@ class Dataset:
     data sample for a given key. Subclasses must also overwrite
     :meth:`__len__`, which is expected to return the size of the dataset.
     """
-
     def __init__(self, transforms: Optional[List] = None):
         self.transforms = transforms
 
@@ -60,12 +59,32 @@ class DataLoader:
 
     def __iter__(self):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        dataset = self.dataset
+        batch_size = self.batch_size
+        if self.shuffle:
+            indices = np.random.permutation(len(dataset))
+            self.ordering = np.array_split(indices, 
+                                           range(batch_size, len(dataset), batch_size))
+        self.cur_batch = 0
         return self
+        ### END YOUR SOLUTION
 
     def __next__(self):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        # if self.cur_batch >= len(self.ordering):
+        #     raise StopIteration
+        # batch = [self.dataset[i] for i in self.ordering[self.cur_batch]]
+        # batch = tuple(
+        #     Tensor(np.stack(item, axis=0))
+        #     for item in zip(*batch)
+        # )
+        # self.cur_batch += 1
+        # return batch
+        if self.cur_batch >= len(self.ordering):
+            raise StopIteration
+
+        batch = self.dataset[self.ordering[self.cur_batch]]
+        self.cur_batch += 1
+        return tuple(Tensor(x) for x in batch)
         ### END YOUR SOLUTION
 
